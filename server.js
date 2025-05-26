@@ -3,16 +3,24 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
 const verifyToken = require("./middleware/auth");
 
 dotenv.config();
 
 const app = express();
+
+// Enable CORS for all routes and origins
+app.use(cors({
+  origin: 'http://localhost:3000', // React app चालतंय इथे
+  credentials: true
+}));
+// Body parser middleware
 app.use(express.json());
 
 const User = require("./models/User");
 
-// ✅ MongoDB Connect
+// MongoDB Connect
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
@@ -21,12 +29,12 @@ mongoose
   .then(() => console.log("✅ MongoDB connected successfully"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ✅ Default Route
+// Default Route
 app.get("/", (req, res) => {
   res.send("Welcome to Gramin Bank Backend!");
 });
 
-// ✅ Register Route
+// Register Route
 app.post("/api/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -64,7 +72,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// ✅ Login Route
+// Login Route
 app.post("/api/login", async (req, res) => {
   let { email, password } = req.body;
   email = email.trim();
@@ -106,7 +114,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// ✅ Protected Dashboard
+// Protected Dashboard Route
 app.get("/api/dashboard", verifyToken, (req, res) => {
   res.json({
     message: `Welcome to your dashboard, ${req.user.email}`,
@@ -114,7 +122,7 @@ app.get("/api/dashboard", verifyToken, (req, res) => {
   });
 });
 
-// ✅ Start Server
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
